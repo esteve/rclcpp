@@ -31,9 +31,12 @@ template<
   typename CallbackT,
   typename AllocatorT,
   typename CallbackMessageT,
-  typename SubscriptionT = rclcpp::Subscription<CallbackMessageT, AllocatorT>>
-typename std::shared_ptr<SubscriptionT>
-create_subscription(
+  typename SubscriptionT
+>
+struct subscription_t
+{
+static decltype(auto)
+create(
   rclcpp::node_interfaces::NodeTopicsInterface * node_topics,
   const std::string & topic_name,
   CallbackT && callback,
@@ -50,8 +53,8 @@ create_subscription(
   subscription_options.qos = qos_profile;
   subscription_options.ignore_local_publications = ignore_local_publications;
 
-  auto factory = rclcpp::create_subscription_factory
-    <MessageT, CallbackT, AllocatorT, CallbackMessageT, SubscriptionT>(
+  auto factory = rclcpp::subscription_factory_t
+    <MessageT, CallbackT, AllocatorT, CallbackMessageT, SubscriptionT>::create(
     std::forward<CallbackT>(callback), msg_mem_strat, allocator);
 
   auto sub = node_topics->create_subscription(
@@ -62,6 +65,7 @@ create_subscription(
   node_topics->add_subscription(sub, group);
   return std::dynamic_pointer_cast<SubscriptionT>(sub);
 }
+};
 
 }  // namespace rclcpp
 

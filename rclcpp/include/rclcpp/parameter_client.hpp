@@ -121,8 +121,8 @@ public:
       MessageMemoryStrategy<rcl_interfaces::msg::ParameterEvent, Alloc>::create_default();
 
     using rcl_interfaces::msg::ParameterEvent;
-    return rclcpp::create_subscription<
-      ParameterEvent, CallbackT, Alloc, ParameterEvent, SubscriptionT>(
+    return rclcpp::subscription_t<
+      ParameterEvent, CallbackT, Alloc, ParameterEvent, SubscriptionT>::create(
       this->node_topics_interface_.get(),
       "parameter_events",
       std::forward<CallbackT>(callback),

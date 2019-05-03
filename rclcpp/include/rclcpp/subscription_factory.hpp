@@ -39,7 +39,7 @@ namespace rclcpp
  * which are used during the creation of a Message type specific subscription
  * within a non-templated class.
  *
- * It is created using the create_subscription_factory function, which is
+ * It is created using the subscription_factory::create function, which is
  * usually called from a templated "create_subscription" method of the Node
  * class, and is passed to the non-templated "create_subscription" method of
  * the NodeTopics class where it is used to create and setup the Subscription.
@@ -72,8 +72,9 @@ template<
   typename Alloc,
   typename CallbackMessageT,
   typename SubscriptionT>
-SubscriptionFactory
-create_subscription_factory(
+struct subscription_factory_t {
+static SubscriptionFactory
+create(
   CallbackT && callback,
   typename rclcpp::message_memory_strategy::MessageMemoryStrategy<
     CallbackMessageT, Alloc>::SharedPtr
@@ -174,6 +175,7 @@ create_subscription_factory(
   // return the factory now that it is populated
   return factory;
 }
+};
 
 }  // namespace rclcpp
 

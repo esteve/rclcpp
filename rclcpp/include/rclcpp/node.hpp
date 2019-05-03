@@ -186,11 +186,11 @@ public:
    */
   template<
     typename MessageT,
-    typename CallbackT,
     typename Alloc = std::allocator<void>,
-    typename SubscriptionT = rclcpp::Subscription<
-      typename rclcpp::subscription_traits::has_message_type<CallbackT>::type, Alloc>>
-  std::shared_ptr<SubscriptionT>
+    typename SubscriptionT = nullptr_t,
+    typename CallbackT = nullptr_t
+  >
+  decltype(auto)
   create_subscription(
     const std::string & topic_name,
     CallbackT && callback,
@@ -219,11 +219,11 @@ public:
    */
   template<
     typename MessageT,
-    typename CallbackT,
     typename Alloc = std::allocator<void>,
-    typename SubscriptionT = rclcpp::Subscription<
-      typename rclcpp::subscription_traits::has_message_type<CallbackT>::type, Alloc>>
-  std::shared_ptr<SubscriptionT>
+    typename SubscriptionT = nullptr_t,
+    typename CallbackT = nullptr_t
+  >
+  decltype(auto)
   create_subscription(
     const std::string & topic_name,
     CallbackT && callback,

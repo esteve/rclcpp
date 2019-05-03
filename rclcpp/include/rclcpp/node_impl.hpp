@@ -84,10 +84,11 @@ Node::create_publisher(
 
 template<
   typename MessageT,
-  typename CallbackT,
   typename Alloc,
-  typename SubscriptionT>
-std::shared_ptr<SubscriptionT>
+  typename SubscriptionT,
+  typename CallbackT
+>
+decltype(auto)
 Node::create_subscription(
   const std::string & topic_name,
   CallbackT && callback,
@@ -99,6 +100,14 @@ Node::create_subscription(
   msg_mem_strat,
   std::shared_ptr<Alloc> allocator)
 {
+  using SubscriptionT2 = typename std::conditional<
+    std::is_same<SubscriptionT, nullptr_t>::value,
+    rclcpp::Subscription<
+      typename rclcpp::subscription_traits::has_message_type<CallbackT>::type, Alloc
+    >,
+    SubscriptionT
+    >::type;
+
   using CallbackMessageT = typename rclcpp::subscription_traits::has_message_type<CallbackT>::type;
 
   if (!allocator) {
@@ -110,7 +119,7 @@ Node::create_subscription(
     msg_mem_strat = MessageMemoryStrategy<CallbackMessageT, Alloc>::create_default();
   }
 
-  return rclcpp::create_subscription<MessageT, CallbackT, Alloc, CallbackMessageT, SubscriptionT>(
+  auto sub = rclcpp::subscription_t<MessageT, CallbackT, Alloc, CallbackMessageT, SubscriptionT2>::create(
     this->node_topics_.get(),
     topic_name,
     std::forward<CallbackT>(callback),
@@ -120,14 +129,17 @@ Node::create_subscription(
     use_intra_process_comms_,
     msg_mem_strat,
     allocator);
+
+  return sub;
 }
 
 template<
   typename MessageT,
-  typename CallbackT,
   typename Alloc,
-  typename SubscriptionT>
-std::shared_ptr<SubscriptionT>
+  typename SubscriptionT,
+  typename CallbackT
+>
+decltype(auto)
 Node::create_subscription(
   const std::string & topic_name,
   CallbackT && callback,
