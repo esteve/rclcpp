@@ -68,8 +68,13 @@ LifecycleNode::create_publisher(
 }
 
 // TODO(karsten1987): Create LifecycleSubscriber
-template<typename MessageT, typename CallbackT, typename Alloc, typename SubscriptionT>
-std::shared_ptr<SubscriptionT>
+template<
+  typename MessageT,
+  typename Alloc,
+  typename SubscriptionT,
+  typename CallbackT
+>
+decltype(auto)
 LifecycleNode::create_subscription(
   const std::string & topic_name,
   CallbackT && callback,
@@ -81,6 +86,12 @@ LifecycleNode::create_subscription(
   msg_mem_strat,
   std::shared_ptr<Alloc> allocator)
 {
+  using SubscriptionT2 = typename std::conditional<
+    std::is_same<SubscriptionT, nullptr_t>::value,
+    rclcpp::Subscription<MessageT, Alloc>,
+    SubscriptionT
+    >::type;
+
   using CallbackMessageT = typename rclcpp::subscription_traits::has_message_type<CallbackT>::type;
 
   if (!allocator) {
@@ -92,7 +103,7 @@ LifecycleNode::create_subscription(
     msg_mem_strat = MessageMemoryStrategy<CallbackMessageT, Alloc>::create_default();
   }
 
-  return rclcpp::subscription_t<MessageT, CallbackT, Alloc, CallbackMessageT, SubscriptionT>::create(
+  return rclcpp::subscription_t<MessageT, CallbackT, Alloc, CallbackMessageT, SubscriptionT2>::create(
     this->node_topics_.get(),
     topic_name,
     std::forward<CallbackT>(callback),
@@ -106,10 +117,11 @@ LifecycleNode::create_subscription(
 
 template<
   typename MessageT,
-  typename CallbackT,
   typename Alloc,
-  typename SubscriptionT>
-std::shared_ptr<SubscriptionT>
+  typename SubscriptionT,
+  typename CallbackT
+>
+decltype(auto)
 LifecycleNode::create_subscription(
   const std::string & topic_name,
   size_t qos_history_depth,
